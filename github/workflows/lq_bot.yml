@@ -1,0 +1,35 @@
+# .github/workflows/lq_bot.yml
+# Runs LQ BOT every weekday at 8am London time (7am UTC in winter, 8am UTC in summer)
+
+name: LQ BOT Daily Digest
+
+on:
+  schedule:
+    - cron: "0 7 * * 1-5"   # Monday–Friday at 7:00 UTC (8am London)
+  workflow_dispatch:          # Also lets you trigger it manually from GitHub
+
+jobs:
+  run-lq-bot:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Write Google token from secret
+        # Decodes the base64-encoded token.pickle stored in GitHub Secrets
+        run: echo "${{ secrets.GOOGLE_TOKEN_B64 }}" | base64 -d > token.pickle
+
+      - name: Run LQ BOT
+        env:
+          SLACK_BOT_TOKEN:   ${{ secrets.SLACK_BOT_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python lq_bot.py

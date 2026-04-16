@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LQ BOT</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #0f0f1a;
+    color: #e2e8f0;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-bottom: 1px solid #2d2d4e;
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+
+  .logo h1 {
+    font-size: 20px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #6366f1, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .logo span {
+    font-size: 12px;
+    color: #64748b;
+    display: block;
+    margin-top: -2px;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .last-run {
+    font-size: 12px;
+    color: #64748b;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #22c55e;
+    display: inline-block;
+    margin-right: 6px;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* Main layout */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px;
+  }
+
+  /* Stats row */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .stat-card {
+    background: #1a1a2e;
+    border: 1px solid #2d2d4e;
+    border-radius: 12px;
+    padding: 20px;
+    transition: border-color 0.2s;
+  }
+
+  .stat-card:hover { border-color: #6366f1; }
+
+  .stat-label {
+    font-size: 12px;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+
+  .stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .stat-value.purple { color: #a78bfa; }
+  .stat-value.blue   { color: #60a5fa; }
+  .stat-value.green  { color: #34d399; }
+  .stat-value.amber  { color: #fbbf24; }
+
+  .stat-sub {
+    font-size: 11px;
+    color: #475569;
+    margin-top: 4px;
+  }
+
+  /* Section header */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #cbd5e1;
+  }
+
+  /* Filters */
+  .filters {
+    display: flex;
+    gap: 8px;
+  }
+
+  .filter-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid #2d2d4e;
+    background: transparent;
+    color: #94a3b8;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .filter-btn:hover, .filter-btn.active {
+    background: #6366f1;
+    border-color: #6366f1;
+    color: white;
+  }
+
+  /* Action cards */
+  .actions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .action-card {
+    background: #1a1a2e;
+    border: 1px solid #2d2d4e;
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+
+  .action-card:hover { border-color: #6366f1; transform: translateX(2px); }
+  .action-card.completed { opacity: 0.5; }
+  .action-card.completed .action-text { text-decoration: line-through; }
+
+  .action-checkbox {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    border: 2px solid #4f46e5;
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+
+  .action-card.completed .action-checkbox {
+    background: #4f46e5;
+    border-color: #4f46e5;
+  }
+
+  .action-body { flex: 1; }
+
+  .action-text {
+    font-size: 14px;
+    color: #e2e8f0;
+    margin-bottom: 6px;
+    line-height: 1.5;
+  }
+
+  .action-meta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .meta-tag {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .meta-meeting { background: #1e1b4b; color: #a78bfa; }
+  .meta-assignee { background: #0f2744; color: #60a5fa; }
+  .meta-deadline { background: #2d1515; color: #f87171; }
+  .meta-date { background: #1a2a1a; color: #4ade80; }
+
+  .mine-badge {
+    font-size: 11px;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  /* Meetings section */
+  .meetings-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .meeting-card {
+    background: #1a1a2e;
+    border: 1px solid #2d2d4e;
+    border-radius: 12px;
+    padding: 16px 20px;
+  }
+
+  .meeting-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #cbd5e1;
+    margin-bottom: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .meeting-stats {
+    display: flex;
+    gap: 12px;
+  }
+
+  .meeting-stat {
+    font-size: 11px;
+    color: #64748b;
+  }
+
+  .meeting-stat span {
+    color: #a78bfa;
+    font-weight: 600;
+  }
+
+  /* Empty state */
+  .empty {
+    text-align: center;
+    padding: 48px;
+    color: #475569;
+    font-size: 14px;
+  }
+
+  /* Add action button */
+  .add-btn {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: opacity 0.2s;
+  }
+
+  .add-btn:hover { opacity: 0.85; }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: #1a1a2e;
+    border: 1px solid #2d2d4e;
+    border-radius: 16px;
+    padding: 24px;
+    width: 480px;
+    max-width: 90vw;
+  }
+
+  .modal h3 { font-size: 16px; margin-bottom: 20px; color: #e2e8f0; }
+
+  .form-group { margin-bottom: 16px; }
+
+  .form-group label {
+    display: block;
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%;
+    background: #0f0f1a;
+    border: 1px solid #2d2d4e;
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: #e2e8f0;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus { border-color: #6366f1; }
+
+  .form-group textarea { resize: vertical; min-height: 80px; }
+
+  .modal-footer {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
+
+  .btn-cancel {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid #2d2d4e;
+    background: transparent;
+    color: #94a3b8;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .btn-save {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: white;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  @media (max-width: 768px) {
+    main { padding: 16px; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .meetings-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🤖</div>
+    <div>
+      <h1>LQ BOT</h1>
+      <span>Meeting Intelligence Dashboard</span>
+    </div>
+  </div>
+  <div class="header-right">
+    <span class="last-run"><span class="status-dot"></span>Last run: Today 08:00</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Open Actions (Mine)</div>
+      <div class="stat-value purple" id="stat-mine">0</div>
+      <div class="stat-sub">assigned to you</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Open Actions (Others)</div>
+      <div class="stat-value blue" id="stat-others">0</div>
+      <div class="stat-sub">assigned to your team</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Completed This Week</div>
+      <div class="stat-value green" id="stat-done">0</div>
+      <div class="stat-sub">actions closed</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Meetings Scanned</div>
+      <div class="stat-value amber" id="stat-meetings">0</div>
+      <div class="stat-sub">with transcripts</div>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="section-header">
+    <div class="section-title">📋 Action Items</div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <div class="filters">
+        <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
+        <button class="filter-btn" onclick="setFilter('mine', this)">Mine</button>
+        <button class="filter-btn" onclick="setFilter('others', this)">Others</button>
+        <button class="filter-btn" onclick="setFilter('open', this)">Open</button>
+        <button class="filter-btn" onclick="setFilter('done', this)">Done</button>
+      </div>
+      <button class="add-btn" onclick="openModal()">＋ Add Action</button>
+    </div>
+  </div>
+
+  <div class="actions-list" id="actions-list"></div>
+
+  <!-- Recent Meetings -->
+  <div class="section-header">
+    <div class="section-title">📅 Recent Meetings</div>
+  </div>
+  <div class="meetings-grid" id="meetings-grid"></div>
+
+</main>
+
+<!-- Add Action Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h3>➕ Add Action Item</h3>
+    <div class="form-group">
+      <label>Action</label>
+      <textarea id="f-action" placeholder="Describe the action..."></textarea>
+    </div>
+    <div class="form-group">
+      <label>Assigned To</label>
+      <input id="f-assignee" placeholder="Name or email" />
+    </div>
+    <div class="form-group">
+      <label>Meeting</label>
+      <input id="f-meeting" placeholder="Meeting name" />
+    </div>
+    <div class="form-group">
+      <label>Deadline (optional)</label>
+      <input id="f-deadline" type="date" />
+    </div>
+    <div class="form-group">
+      <label>Assigned to me?</label>
+      <select id="f-mine">
+        <option value="true">Yes — this is mine</option>
+        <option value="false">No — assigned to someone else</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveAction()">Save Action</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Storage ───────────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'lqbot_actions';
+const MEETINGS_KEY = 'lqbot_meetings';
+
+function loadActions() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  catch { return []; }
+}
+
+function saveActions(actions) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(actions));
+}
+
+function loadMeetings() {
+  try { return JSON.parse(localStorage.getItem(MEETINGS_KEY)) || []; }
+  catch { return []; }
+}
+
+// ── Seed demo data if empty ───────────────────────────────────────────────────
+function seedDemoData() {
+  if (loadActions().length > 0) return;
+
+  const demo = [
+    {
+      id: 1,
+      action: "Send updated pricing deck to Visa Direct team",
+      assigned_to: "Laura Quijano",
+      assigned_to_me: true,
+      meeting: "CKO | Visa Direct Bi-Weekly Meeting",
+      deadline: "2026-04-18",
+      completed: false,
+      date: "2026-04-07"
+    },
+    {
+      id: 2,
+      action: "Share Worldline file transfer migration timeline",
+      assigned_to: "Laura Quijano",
+      assigned_to_me: true,
+      meeting: "Worldline File Transfer Migration",
+      deadline: "2026-04-20",
+      completed: false,
+      date: "2026-04-14"
+    },
+    {
+      id: 3,
+      action: "Provide API documentation for integration",
+      assigned_to: "Jack Stannard",
+      assigned_to_me: false,
+      meeting: "CKO | Visa Direct Bi-Weekly Meeting",
+      deadline: null,
+      completed: false,
+      date: "2026-04-07"
+    },
+    {
+      id: 4,
+      action: "Confirm file transfer test environment access",
+      assigned_to: "Gregory Dorizon",
+      assigned_to_me: false,
+      meeting: "Worldline File Transfer Migration",
+      deadline: "2026-04-17",
+      completed: false,
+      date: "2026-04-14"
+    },
+    {
+      id: 5,
+      action: "Review Ashby ATS interviewer training materials",
+      assigned_to: "Laura Quijano",
+      assigned_to_me: true,
+      meeting: "Ashby ATS | Interviewer Enablement Session",
+      deadline: null,
+      completed: true,
+      date: "2026-04-10"
+    }
+  ];
+
+  const meetings = [
+    { title: "CKO | Visa Direct Bi-Weekly Meeting", date: "2026-04-07", actions: 2, transcribed: true },
+    { title: "Worldline File Transfer Migration", date: "2026-04-14", actions: 2, transcribed: true },
+    { title: "Ashby ATS | Interviewer Enablement Session", date: "2026-04-10", actions: 1, transcribed: false },
+  ];
+
+  saveActions(demo);
+  localStorage.setItem(MEETINGS_KEY, JSON.stringify(meetings));
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+let currentFilter = 'all';
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderActions();
+}
+
+function renderActions() {
+  const actions = loadActions();
+  const list = document.getElementById('actions-list');
+
+  let filtered = actions.filter(a => {
+    if (currentFilter === 'mine')   return a.assigned_to_me;
+    if (currentFilter === 'others') return !a.assigned_to_me;
+    if (currentFilter === 'open')   return !a.completed;
+    if (currentFilter === 'done')   return a.completed;
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="empty">✅ No actions here!</div>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(a => `
+    <div class="action-card ${a.completed ? 'completed' : ''}" id="card-${a.id}">
+      <div class="action-checkbox" onclick="toggleAction(${a.id})">
+        ${a.completed ? '✓' : ''}
+      </div>
+      <div class="action-body">
+        <div class="action-text">${a.action}</div>
+        <div class="action-meta">
+          ${a.assigned_to_me ? '<span class="mine-badge">🙋 Mine</span>' : ''}
+          <span class="meta-tag meta-meeting">📅 ${a.meeting}</span>
+          <span class="meta-tag meta-assignee">👤 ${a.assigned_to}</span>
+          ${a.deadline ? `<span class="meta-tag meta-deadline">⏰ ${a.deadline}</span>` : ''}
+          <span class="meta-tag meta-date">🗓 ${a.date}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  updateStats(actions);
+}
+
+function renderMeetings() {
+  const meetings = loadMeetings();
+  const grid = document.getElementById('meetings-grid');
+
+  if (meetings.length === 0) {
+    grid.innerHTML = '<div class="empty">No meetings scanned yet.</div>';
+    return;
+  }
+
+  grid.innerHTML = meetings.map(m => `
+    <div class="meeting-card">
+      <div class="meeting-title">📅 ${m.title}</div>
+      <div class="meeting-stats">
+        <div class="meeting-stat">Date: <span>${m.date}</span></div>
+        <div class="meeting-stat">Actions: <span>${m.actions}</span></div>
+        <div class="meeting-stat">Transcript: <span>${m.transcribed ? '✅' : '⚠️ None'}</span></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateStats(actions) {
+  const mine    = actions.filter(a => a.assigned_to_me && !a.completed).length;
+  const others  = actions.filter(a => !a.assigned_to_me && !a.completed).length;
+  const done    = actions.filter(a => a.completed).length;
+  const meetings = loadMeetings().length;
+
+  document.getElementById('stat-mine').textContent     = mine;
+  document.getElementById('stat-others').textContent   = others;
+  document.getElementById('stat-done').textContent     = done;
+  document.getElementById('stat-meetings').textContent = meetings;
+}
+
+// ── Toggle complete ───────────────────────────────────────────────────────────
+function toggleAction(id) {
+  const actions = loadActions();
+  const a = actions.find(x => x.id === id);
+  if (a) { a.completed = !a.completed; saveActions(actions); renderActions(); }
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+function openModal()  { document.getElementById('modal').classList.add('open'); }
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+function saveAction() {
+  const action = document.getElementById('f-action').value.trim();
+  if (!action) return alert('Please enter an action.');
+
+  const actions = loadActions();
+  const newAction = {
+    id: Date.now(),
+    action,
+    assigned_to: document.getElementById('f-assignee').value || 'Unknown',
+    assigned_to_me: document.getElementById('f-mine').value === 'true',
+    meeting: document.getElementById('f-meeting').value || 'Manual entry',
+    deadline: document.getElementById('f-deadline').value || null,
+    completed: false,
+    date: new Date().toISOString().split('T')[0]
+  };
+
+  actions.unshift(newAction);
+  saveActions(actions);
+  closeModal();
+  renderActions();
+  renderMeetings();
+
+  // Clear form
+  ['f-action','f-assignee','f-meeting','f-deadline'].forEach(id => document.getElementById(id).value = '');
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+seedDemoData();
+renderActions();
+renderMeetings();
+</script>
+</body>
+</html>

@@ -1,15 +1,16 @@
 # .github/workflows/lq_bot.yml
-# Runs LQ BOT every weekday at 8am London time (7am UTC in winter, 8am UTC in summer)
+# Runs every weekday at 8am London time
+# Also runs every Monday to refresh the weekly calendar
 
-name: LQ BOT Daily Digest
+name: LQ Weekly Calendar Update
 
 on:
   schedule:
-    - cron: "0 7 * * 1-5"   # Monday–Friday at 7:00 UTC (8am London)
-  workflow_dispatch:          # Also lets you trigger it manually from GitHub
+    - cron: "0 7 * * 1"   # Every Monday at 7:00 UTC (8am London)
+  workflow_dispatch:        # Also lets you trigger manually from GitHub
 
 jobs:
-  run-lq-bot:
+  update-site:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,14 +23,29 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip install google-auth google-auth-httplib2 google-api-python-client requests
 
       - name: Write Google token from secret
-        # Decodes the base64-encoded token.pickle stored in GitHub Secrets
         run: echo "${{ secrets.GOOGLE_TOKEN_B64 }}" | base64 -d > token.pickle
 
-      - name: Run LQ BOT
+      - name: Inject HTML into script
+        run: |
+          # Replace %%HTML%% placeholder in lq_bot.py with the actual index.html content
+          python3 - <<'EOF'
+          with open('index.html', 'r') as f:
+              html = f.read()
+          with open('lq_bot.py', 'r') as f:
+              script = f.read()
+          # Escape for safe embedding
+          html_escaped = html.replace('\\', '\\\\').replace('"""', '\\"\\"\\"')
+          script = script.replace('%%HTML%%', html_escaped)
+          with open('lq_bot_injected.py', 'w') as f:
+              f.write(script)
+          print("✅ HTML injected into script")
+          EOF
+
+      - name: Run LQ Updater
         env:
-          SLACK_BOT_TOKEN:   ${{ secrets.SLACK_BOT_TOKEN }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: python lq_bot.py
+          GOOGLE_TOKEN_B64: ${{ secrets.GOOGLE_TOKEN_B64 }}
+          PAT_TOKEN:        ${{ secrets.PAT_TOKEN }}
+        run: python lq_bot_injected.py

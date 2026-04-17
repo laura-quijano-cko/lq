@@ -3,670 +3,695 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LQ BOT</title>
+<title>LQ</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: #0f0f1a;
-    color: #e2e8f0;
-    min-height: 100vh;
+  :root {
+    --bg:#0f0f12; --surface:#1a1a22; --surface2:#22222e; --surface3:#2a2a38;
+    --border:#2e2e3e; --text:#f0f0f5; --text2:#8888a0; --text3:#55556a;
+    --accent:#5b8def; --accent-soft:rgba(91,141,239,0.15);
+    --green:#30d158; --green-soft:rgba(48,209,88,0.13);
+    --amber:#ff9f0a; --amber-soft:rgba(255,159,10,0.13);
+    --red:#ff453a; --red-soft:rgba(255,69,58,0.13);
+    --purple:#bf5af2; --purple-soft:rgba(191,90,242,0.13);
+    --teal:#5ac8fa; --teal-soft:rgba(90,200,250,0.10);
+    --hr: 56px; /* pixels per hour */
   }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:13px;-webkit-font-smoothing:antialiased;}
 
-  /* Header */
-  header {
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    border-bottom: 1px solid #2d2d4e;
-    padding: 16px 32px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
+  /* ── Header ── */
+  header{background:rgba(15,15,18,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;}
+  .logo{display:flex;align-items:center;gap:9px;}
+  .logo-icon{width:30px;height:30px;background:linear-gradient(145deg,#5b8def,#34aadc);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;}
+  .logo h1{font-size:16px;font-weight:700;letter-spacing:-.3px;}
+  .nav-tabs{display:flex;gap:2px;background:var(--surface);border-radius:20px;padding:3px;border:1px solid var(--border);}
+  .nav-tab{padding:5px 14px;border-radius:16px;border:none;background:transparent;color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;font-family:inherit;}
+  .nav-tab.active{background:var(--surface3);color:var(--text);}
+  .add-btn{display:flex;align-items:center;gap:5px;padding:7px 14px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .15s;}
+  .add-btn:hover{opacity:.85;}
 
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
+  /* ── Pages ── */
+  .page{display:none;} .page.active{display:block;}
 
-  .logo-icon {
-    width: 40px;
-    height: 40px;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-  }
+  /* ── Stats strip ── */
+  .stats-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+  .stat-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;}
+  .stat-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;font-weight:600;margin-bottom:4px;}
+  .stat-val{font-size:22px;font-weight:800;letter-spacing:-1px;line-height:1;}
+  .stat-sub{font-size:10px;color:var(--text3);margin-top:2px;}
 
-  .logo h1 {
-    font-size: 20px;
-    font-weight: 700;
-    background: linear-gradient(135deg, #6366f1, #a78bfa);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
+  /* ── Week layout ── */
+  .week-wrap{display:flex;flex-direction:column;height:calc(100vh - 52px);overflow:hidden;}
+  .cal-area{flex:1;overflow:auto;display:flex;flex-direction:column;}
 
-  .logo span {
-    font-size: 12px;
-    color: #64748b;
-    display: block;
-    margin-top: -2px;
-  }
+  /* Day headers */
+  .day-headers{display:grid;grid-template-columns:44px repeat(5,1fr);border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:100;flex-shrink:0;}
+  .dhc{padding:9px 6px;text-align:center;border-right:1px solid var(--border);}
+  .dhc:last-child{border-right:none;}
+  .dn{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);}
+  .dd{font-size:19px;font-weight:700;letter-spacing:-.5px;color:var(--text);line-height:1.1;margin-top:2px;}
+  .dd.today{color:#fff;background:var(--accent);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;margin:2px auto 0;font-size:15px;}
 
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
+  /* Time grid */
+  .time-grid{display:grid;grid-template-columns:44px repeat(5,1fr);flex:1;}
+  .time-col{border-right:1px solid var(--border);}
+  .tlbl{height:var(--hr);display:flex;align-items:flex-start;justify-content:flex-end;padding:4px 6px 0 0;font-size:9px;color:var(--text3);font-weight:500;border-bottom:1px solid var(--border);}
+  .day-col{border-right:1px solid var(--border);position:relative;}
+  .day-col:last-child{border-right:none;}
+  .hcell{height:var(--hr);border-bottom:1px solid var(--border);position:relative;}
+  .hcell::after{content:'';position:absolute;top:50%;left:0;right:0;border-top:1px dashed rgba(255,255,255,.03);pointer-events:none;}
 
-  .last-run {
-    font-size: 12px;
-    color: #64748b;
-  }
+  /* Events */
+  .ev{position:absolute;left:3px;right:3px;border-radius:5px;padding:3px 6px;font-size:10px;font-weight:500;line-height:1.3;overflow:hidden;z-index:10;}
+  .ev.meeting{background:rgba(91,141,239,.18);border-left:2px solid var(--accent);color:#8ab4f8;cursor:pointer;}
+  .ev.meeting:hover{background:rgba(91,141,239,.28);}
+  /* Uncategorised meeting = purple, needs LNO assigned */
+  .ev.meeting.uncategorised{border-left:2px solid var(--purple);background:var(--purple-soft);color:var(--purple);}
+  .ev.meeting.cat-L{background:var(--green-soft);border-left:2px solid var(--green);color:var(--green);}
+  .ev.meeting.cat-N{background:rgba(91,141,239,.18);border-left:2px solid var(--accent);color:#8ab4f8;}
+  .ev.meeting.cat-O{background:var(--red-soft);border-left:2px solid var(--red);color:var(--red);}
 
-  .status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #22c55e;
-    display: inline-block;
-    margin-right: 6px;
-    animation: pulse 2s infinite;
-  }
+  /* Empty gap = teal/cyan, needs time logged */
+  .ev.gap{background:var(--teal-soft);border:1.5px dashed rgba(90,200,250,0.4);color:var(--teal);cursor:pointer;display:flex;align-items:center;gap:4px;font-weight:600;font-size:9px;letter-spacing:.2px;transition:all .15s;}
+  .ev.gap:hover{background:rgba(90,200,250,0.18);border-color:var(--teal);}
+  .ev.gap.filled-L{background:var(--green-soft);border:1.5px solid var(--green);color:var(--green);font-weight:500;font-size:10px;letter-spacing:0;}
+  .ev.gap.filled-N{background:rgba(91,141,239,.13);border:1.5px solid var(--accent);color:#8ab4f8;font-weight:500;font-size:10px;letter-spacing:0;}
+  .ev.gap.filled-O{background:var(--red-soft);border:1.5px solid var(--red);color:var(--red);font-weight:500;font-size:10px;letter-spacing:0;}
 
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-  }
+  .pulse{width:5px;height:5px;border-radius:50%;background:var(--teal);flex-shrink:0;animation:pulse 1.8s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.7);}}
 
-  /* Main layout */
-  main {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 32px;
-  }
+  .ev-time{font-size:9px;opacity:.7;}
+  .ev-title{font-size:10px;font-weight:600;margin-top:1px;}
+  .cat-badge{display:inline-block;font-size:8px;font-weight:800;padding:0 3px;border-radius:3px;background:currentColor;color:var(--bg);margin-right:3px;opacity:.9;}
 
-  /* Stats row */
-  .stats-row {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-bottom: 32px;
-  }
+  /* ── LNO bar strip ── */
+  .lno-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+  .lno-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;}
+  .lno-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
+  .lno-name{font-size:11px;font-weight:600;color:var(--text2);}
+  .lno-pct{font-size:11px;font-weight:700;}
+  .bar-track{height:4px;background:var(--surface3);border-radius:2px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:2px;transition:width .4s;}
+  .bar-fill.L{background:var(--green);}
+  .bar-fill.N{background:var(--accent);}
+  .bar-fill.O{background:var(--red);}
+  .lno-count{font-size:10px;color:var(--text3);margin-top:4px;}
 
-  .stat-card {
-    background: #1a1a2e;
-    border: 1px solid #2d2d4e;
-    border-radius: 12px;
-    padding: 20px;
-    transition: border-color 0.2s;
-  }
+  /* ── Modals ── */
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);z-index:300;align-items:center;justify-content:center;}
+  .overlay.open{display:flex;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;width:400px;max-width:92vw;box-shadow:0 24px 64px rgba(0,0,0,.5);}
+  .modal h3{font-size:15px;font-weight:700;margin-bottom:16px;letter-spacing:-.2px;}
+  .fg{margin-bottom:13px;}
+  .fg label{display:block;font-size:10px;color:var(--text2);font-weight:600;margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px;}
+  .fg input,.fg select,.fg textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:9px 11px;color:var(--text);font-size:13px;outline:none;transition:border-color .15s;font-family:inherit;}
+  .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--accent);}
+  .fg textarea{resize:vertical;min-height:68px;}
+  .lno-sel{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .lno-opt{padding:10px 8px;border-radius:7px;border:1.5px solid var(--border);cursor:pointer;text-align:center;transition:all .15s;background:var(--surface2);}
+  .lno-opt:hover{border-color:#666;}
+  .lno-opt.sel-L{background:var(--green-soft);border-color:var(--green);}
+  .lno-opt.sel-N{background:rgba(91,141,239,.13);border-color:var(--accent);}
+  .lno-opt.sel-O{background:var(--red-soft);border-color:var(--red);}
+  .ol{font-size:18px;font-weight:800;line-height:1;color:var(--text2);}
+  .os{font-size:9px;color:var(--text3);margin-top:2px;}
+  .lno-opt.sel-L .ol{color:var(--green);}
+  .lno-opt.sel-N .ol{color:var(--accent);}
+  .lno-opt.sel-O .ol{color:var(--red);}
+  .modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;}
+  .btn-c{padding:8px 16px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:13px;cursor:pointer;font-family:inherit;}
+  .btn-s{padding:8px 18px;border-radius:7px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
 
-  .stat-card:hover { border-color: #6366f1; }
+  /* ── Actions page ── */
+  .ap{max-width:760px;margin:24px auto;padding:0 20px;}
+  .card-d{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+  .cdh{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .cdt{font-size:13px;font-weight:600;}
+  .arow{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s;}
+  .arow:hover{background:var(--surface2);}
+  .arow:last-child{border-bottom:none;}
+  .arow.done{opacity:.4;}
+  .arow.done .at{text-decoration:line-through;}
+  .ack{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;flex-shrink:0;margin-top:1px;transition:all .15s;}
+  .arow.done .ack{background:var(--green);border-color:var(--green);}
+  .at{font-size:13px;color:var(--text);margin-bottom:4px;}
+  .atags{display:flex;gap:6px;flex-wrap:wrap;}
+  .tag{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:500;}
+  .tag.mine{background:var(--accent-soft);color:var(--accent);}
+  .tag.mt{background:var(--surface3);color:var(--text2);}
+  .tag.dl{background:var(--red-soft);color:var(--red);}
 
-  .stat-label {
-    font-size: 12px;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 8px;
-  }
-
-  .stat-value {
-    font-size: 32px;
-    font-weight: 700;
-    line-height: 1;
-  }
-
-  .stat-value.purple { color: #a78bfa; }
-  .stat-value.blue   { color: #60a5fa; }
-  .stat-value.green  { color: #34d399; }
-  .stat-value.amber  { color: #fbbf24; }
-
-  .stat-sub {
-    font-size: 11px;
-    color: #475569;
-    margin-top: 4px;
-  }
-
-  /* Section header */
-  .section-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
-  }
-
-  .section-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: #cbd5e1;
-  }
-
-  /* Filters */
-  .filters {
-    display: flex;
-    gap: 8px;
-  }
-
-  .filter-btn {
-    padding: 6px 14px;
-    border-radius: 20px;
-    border: 1px solid #2d2d4e;
-    background: transparent;
-    color: #94a3b8;
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .filter-btn:hover, .filter-btn.active {
-    background: #6366f1;
-    border-color: #6366f1;
-    color: white;
-  }
-
-  /* Action cards */
-  .actions-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-bottom: 32px;
-  }
-
-  .action-card {
-    background: #1a1a2e;
-    border: 1px solid #2d2d4e;
-    border-radius: 12px;
-    padding: 16px 20px;
-    display: flex;
-    align-items: flex-start;
-    gap: 16px;
-    transition: all 0.2s;
-    cursor: pointer;
-  }
-
-  .action-card:hover { border-color: #6366f1; transform: translateX(2px); }
-  .action-card.completed { opacity: 0.5; }
-  .action-card.completed .action-text { text-decoration: line-through; }
-
-  .action-checkbox {
-    width: 20px;
-    height: 20px;
-    border-radius: 6px;
-    border: 2px solid #4f46e5;
-    flex-shrink: 0;
-    margin-top: 2px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-    cursor: pointer;
-  }
-
-  .action-card.completed .action-checkbox {
-    background: #4f46e5;
-    border-color: #4f46e5;
-  }
-
-  .action-body { flex: 1; }
-
-  .action-text {
-    font-size: 14px;
-    color: #e2e8f0;
-    margin-bottom: 6px;
-    line-height: 1.5;
-  }
-
-  .action-meta {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-
-  .meta-tag {
-    font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .meta-meeting { background: #1e1b4b; color: #a78bfa; }
-  .meta-assignee { background: #0f2744; color: #60a5fa; }
-  .meta-deadline { background: #2d1515; color: #f87171; }
-  .meta-date { background: #1a2a1a; color: #4ade80; }
-
-  .mine-badge {
-    font-size: 11px;
-    background: linear-gradient(135deg, #4f46e5, #7c3aed);
-    color: white;
-    padding: 2px 8px;
-    border-radius: 4px;
-  }
-
-  /* Meetings section */
-  .meetings-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-    margin-bottom: 32px;
-  }
-
-  .meeting-card {
-    background: #1a1a2e;
-    border: 1px solid #2d2d4e;
-    border-radius: 12px;
-    padding: 16px 20px;
-  }
-
-  .meeting-title {
-    font-size: 13px;
-    font-weight: 600;
-    color: #cbd5e1;
-    margin-bottom: 8px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .meeting-stats {
-    display: flex;
-    gap: 12px;
-  }
-
-  .meeting-stat {
-    font-size: 11px;
-    color: #64748b;
-  }
-
-  .meeting-stat span {
-    color: #a78bfa;
-    font-weight: 600;
-  }
-
-  /* Empty state */
-  .empty {
-    text-align: center;
-    padding: 48px;
-    color: #475569;
-    font-size: 14px;
-  }
-
-  /* Add action button */
-  .add-btn {
-    background: linear-gradient(135deg, #4f46e5, #7c3aed);
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 13px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: opacity 0.2s;
-  }
-
-  .add-btn:hover { opacity: 0.85; }
-
-  /* Modal */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    z-index: 200;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .modal-overlay.open { display: flex; }
-
-  .modal {
-    background: #1a1a2e;
-    border: 1px solid #2d2d4e;
-    border-radius: 16px;
-    padding: 24px;
-    width: 480px;
-    max-width: 90vw;
-  }
-
-  .modal h3 { font-size: 16px; margin-bottom: 20px; color: #e2e8f0; }
-
-  .form-group { margin-bottom: 16px; }
-
-  .form-group label {
-    display: block;
-    font-size: 12px;
-    color: #64748b;
-    margin-bottom: 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .form-group input, .form-group select, .form-group textarea {
-    width: 100%;
-    background: #0f0f1a;
-    border: 1px solid #2d2d4e;
-    border-radius: 8px;
-    padding: 10px 12px;
-    color: #e2e8f0;
-    font-size: 13px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-
-  .form-group input:focus,
-  .form-group select:focus,
-  .form-group textarea:focus { border-color: #6366f1; }
-
-  .form-group textarea { resize: vertical; min-height: 80px; }
-
-  .modal-footer {
-    display: flex;
-    gap: 8px;
-    justify-content: flex-end;
-    margin-top: 20px;
-  }
-
-  .btn-cancel {
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: 1px solid #2d2d4e;
-    background: transparent;
-    color: #94a3b8;
-    font-size: 13px;
-    cursor: pointer;
-  }
-
-  .btn-save {
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: none;
-    background: linear-gradient(135deg, #4f46e5, #7c3aed);
-    color: white;
-    font-size: 13px;
-    cursor: pointer;
-  }
-
-  @media (max-width: 768px) {
-    main { padding: 16px; }
-    .stats-row { grid-template-columns: repeat(2, 1fr); }
-    .meetings-grid { grid-template-columns: 1fr; }
-  }
+  /* ── Analytics page ── */
+  .analytics-page{max-width:700px;margin:24px auto;padding:0 20px;display:flex;flex-direction:column;gap:16px;}
 </style>
 </head>
 <body>
 
 <header>
   <div class="logo">
-    <div class="logo-icon">🤖</div>
-    <div>
-      <h1>LQ BOT</h1>
-      <span>Meeting Intelligence Dashboard</span>
-    </div>
+    <div class="logo-icon">✦</div>
+    <h1>LQ</h1>
   </div>
-  <div class="header-right">
-    <span class="last-run"><span class="status-dot"></span>Last run: Today 08:00</span>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('week',this)">Week</button>
+    <button class="nav-tab" onclick="showPage('actions',this)">Actions</button>
+    <button class="nav-tab" onclick="showPage('analytics',this)">Analytics</button>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <div id="week-nav" style="display:flex;gap:4px;">
+      <button onclick="prevWeek()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:13px;font-family:inherit;">‹</button>
+      <button onclick="nextWeek()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:13px;font-family:inherit;">›</button>
+    </div>
+    <button class="add-btn" onclick="openModal('action')">＋ Action</button>
   </div>
 </header>
 
-<main>
-
-  <!-- Stats -->
-  <div class="stats-row">
-    <div class="stat-card">
-      <div class="stat-label">Open Actions (Mine)</div>
-      <div class="stat-value purple" id="stat-mine">0</div>
-      <div class="stat-sub">assigned to you</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Open Actions (Others)</div>
-      <div class="stat-value blue" id="stat-others">0</div>
-      <div class="stat-sub">assigned to your team</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Completed This Week</div>
-      <div class="stat-value green" id="stat-done">0</div>
-      <div class="stat-sub">actions closed</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Meetings Scanned</div>
-      <div class="stat-value amber" id="stat-meetings">0</div>
-      <div class="stat-sub">with transcripts</div>
+<!-- WEEK -->
+<div id="page-week" class="page active">
+  <div class="week-wrap">
+    <!-- LNO analytics strip -->
+    <div class="lno-strip" id="lno-strip"></div>
+    <!-- Stats strip -->
+    <div class="stats-strip" id="stats-strip"></div>
+    <!-- Calendar -->
+    <div class="cal-area">
+      <div class="day-headers" id="day-headers"></div>
+      <div class="time-grid" id="time-grid"></div>
     </div>
   </div>
+</div>
 
-  <!-- Actions -->
-  <div class="section-header">
-    <div class="section-title">📋 Action Items</div>
-    <div style="display:flex;gap:8px;align-items:center;">
-      <div class="filters">
-        <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
-        <button class="filter-btn" onclick="setFilter('mine', this)">Mine</button>
-        <button class="filter-btn" onclick="setFilter('others', this)">Others</button>
-        <button class="filter-btn" onclick="setFilter('open', this)">Open</button>
-        <button class="filter-btn" onclick="setFilter('done', this)">Done</button>
+<!-- ACTIONS -->
+<div id="page-actions" class="page">
+  <div class="ap">
+    <div class="card-d">
+      <div class="cdh"><span class="cdt">Action Items</span><button class="add-btn" onclick="openModal('action')">＋ Add</button></div>
+      <div id="actions-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ANALYTICS -->
+<div id="page-analytics" class="page">
+  <div class="analytics-page">
+    <div class="card-d">
+      <div class="cdh"><span class="cdt">Weekly LNO Summary</span></div>
+      <div id="analytics-content" style="padding:20px;"></div>
+    </div>
+    <div class="card-d">
+      <div class="cdh"><span class="cdt">About LNO</span></div>
+      <div style="padding:16px;font-size:12px;color:var(--text2);line-height:1.7">
+        <p><strong style="color:var(--green)">Leverage (L)</strong> — High-impact work creating outsized results. Strategy, key decisions, unblocking teams, stakeholder alignment.</p><br>
+        <p><strong style="color:var(--accent)">Neutral (N)</strong> — Necessary work with moderate impact. Standups, reviews, 1-1s, planning. Keep efficient.</p><br>
+        <p><strong style="color:var(--red)">Overhead (O)</strong> — Low-value time. Minimise, delegate, or eliminate.</p>
       </div>
-      <button class="add-btn" onclick="openModal()">＋ Add Action</button>
     </div>
   </div>
+</div>
 
-  <div class="actions-list" id="actions-list"></div>
-
-  <!-- Recent Meetings -->
-  <div class="section-header">
-    <div class="section-title">📅 Recent Meetings</div>
-  </div>
-  <div class="meetings-grid" id="meetings-grid"></div>
-
-</main>
-
-<!-- Add Action Modal -->
-<div class="modal-overlay" id="modal">
+<!-- Meeting LNO modal -->
+<div class="overlay" id="modal-meeting">
   <div class="modal">
-    <h3>➕ Add Action Item</h3>
-    <div class="form-group">
-      <label>Action</label>
-      <textarea id="f-action" placeholder="Describe the action..."></textarea>
+    <h3 id="meet-modal-title">Categorise meeting</h3>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:16px;">Was this meeting Leverage, Neutral, or Overhead?</div>
+    <div class="lno-sel">
+      <div class="lno-opt" id="mopt-L" onclick="selMeetLNO('L')"><div class="ol">L</div><div class="os">Leverage</div></div>
+      <div class="lno-opt" id="mopt-N" onclick="selMeetLNO('N')"><div class="ol">N</div><div class="os">Neutral</div></div>
+      <div class="lno-opt" id="mopt-O" onclick="selMeetLNO('O')"><div class="ol">O</div><div class="os">Overhead</div></div>
     </div>
-    <div class="form-group">
-      <label>Assigned To</label>
-      <input id="f-assignee" placeholder="Name or email" />
+    <div class="modal-footer">
+      <button class="btn-c" onclick="closeModal('meeting')">Cancel</button>
+      <button class="btn-s" onclick="saveMeetLNO()">Save</button>
     </div>
-    <div class="form-group">
-      <label>Meeting</label>
-      <input id="f-meeting" placeholder="Meeting name" />
+  </div>
+</div>
+
+<!-- Gap log modal -->
+<div class="overlay" id="modal-slot">
+  <div class="modal">
+    <h3 id="slot-modal-title">Log free time</h3>
+    <div class="fg">
+      <label>What did you do?</label>
+      <textarea id="slot-desc" placeholder="e.g. Deep work on IPP PRD, reviewed Brazil plan..."></textarea>
     </div>
-    <div class="form-group">
-      <label>Deadline (optional)</label>
-      <input id="f-deadline" type="date" />
+    <div class="fg">
+      <label>LNO Category</label>
+      <div class="lno-sel">
+        <div class="lno-opt" id="sopt-L" onclick="selSlotLNO('L')"><div class="ol">L</div><div class="os">Leverage</div></div>
+        <div class="lno-opt" id="sopt-N" onclick="selSlotLNO('N')"><div class="ol">N</div><div class="os">Neutral</div></div>
+        <div class="lno-opt" id="sopt-O" onclick="selSlotLNO('O')"><div class="ol">O</div><div class="os">Overhead</div></div>
+      </div>
     </div>
-    <div class="form-group">
-      <label>Assigned to me?</label>
-      <select id="f-mine">
-        <option value="true">Yes — this is mine</option>
-        <option value="false">No — assigned to someone else</option>
+    <div class="fg">
+      <label>Duration</label>
+      <select id="slot-dur">
+        <option value="5">5 mins</option>
+        <option value="10">10 mins</option>
+        <option value="15">15 mins</option>
+        <option value="20">20 mins</option>
+        <option value="25">25 mins</option>
+        <option value="30" selected>30 mins</option>
       </select>
     </div>
     <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-save" onclick="saveAction()">Save Action</button>
+      <button class="btn-c" onclick="closeModal('slot')">Cancel</button>
+      <button class="btn-s" onclick="saveSlot()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Action modal -->
+<div class="overlay" id="modal-action">
+  <div class="modal">
+    <h3>Add Action Item</h3>
+    <div class="fg"><label>Action</label><textarea id="act-text" placeholder="What needs to happen?"></textarea></div>
+    <div class="fg"><label>Assigned to</label><input id="act-who" placeholder="Name or email"/></div>
+    <div class="fg"><label>Meeting</label><input id="act-meeting" placeholder="Which meeting?"/></div>
+    <div class="fg"><label>Deadline</label><input id="act-deadline" type="date"/></div>
+    <div class="fg"><label>Mine?</label><select id="act-mine"><option value="true">Yes — mine</option><option value="false">No — someone else</option></select></div>
+    <div class="modal-footer">
+      <button class="btn-c" onclick="closeModal('action')">Cancel</button>
+      <button class="btn-s" onclick="saveAction()">Save</button>
     </div>
   </div>
 </div>
 
 <script>
-// ── Storage ───────────────────────────────────────────────────────────────────
-const STORAGE_KEY = 'lqbot_actions';
-const MEETINGS_KEY = 'lqbot_meetings';
+// ── Storage ──────────────────────────────────────────────────────────────────
+const LS = {
+  get: k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+  set: (k,v) => localStorage.setItem(k, JSON.stringify(v))
+};
+const getMeetCats = () => LS.get('lq3_meetcats') || {};
+const setMeetCats = v => LS.set('lq3_meetcats', v);
+const getSlots    = () => LS.get('lq3_slots') || {};
+const setSlots    = v => LS.set('lq3_slots', v);
+const getActions  = () => LS.get('lq3_actions') || [];
+const setActions  = v => LS.set('lq3_actions', v);
 
-function loadActions() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-  catch { return []; }
-}
+// ── Accepted-only meetings Apr 7–11 ─────────────────────────────────────────
+// Format: {s: 'HH:MM', e: 'HH:MM', t: 'title', id: 'unique'}
+const MEETINGS = {
+  '2026-04-07': [
+    {s:'09:30',e:'10:00',t:'softPOS stand-up',id:'m07a'},
+    {s:'12:00',e:'12:30',t:'Mollie × Softpay × CKO IPP',id:'m07b'},
+    {s:'12:30',e:'13:00',t:'CN × AI CoE Data mapping',id:'m07c'},
+    {s:'13:30',e:'14:00',t:'Renata / Laura',id:'m07d'},
+    {s:'14:00',e:'14:45',t:'IPP Config for sub-entities',id:'m07e'},
+    {s:'15:00',e:'15:30',t:'Mollie × CKO Features prioritization',id:'m07f'},
+    {s:'15:30',e:'16:00',t:'FP&Product BR – Strategic Alignment',id:'m07g'},
+    {s:'16:00',e:'16:45',t:'Ashish / Laura – Growth & Goals',id:'m07h'},
+  ],
+  '2026-04-08': [
+    {s:'10:00',e:'10:30',t:'CP M&M Daily Standup',id:'m08a'},
+    {s:'10:00',e:'10:30',t:'In Person Payments',id:'m08b'},
+    {s:'10:30',e:'11:30',t:'Sprint Planning',id:'m08c'},
+    {s:'11:30',e:'12:30',t:'Weekly CPP OKR review',id:'m08d'},
+    {s:'13:00',e:'13:30',t:'SIRET clearing failures follow-up',id:'m08e'},
+    {s:'14:00',e:'14:30',t:'Brazil plan',id:'m08f'},
+    {s:'14:30',e:'15:00',t:'Pulse Payouts Connection Discussion',id:'m08g'},
+    {s:'15:00',e:'15:45',t:'Emily / Laura',id:'m08h'},
+    {s:'16:00',e:'16:45',t:'Laura / Adi – weekly',id:'m08i'},
+  ],
+  '2026-04-09': [
+    {s:'09:30',e:'10:00',t:'softPOS stand-up',id:'m09a'},
+    {s:'11:00',e:'11:45',t:'Amanda / Laura 1-1',id:'m09b'},
+    {s:'13:00',e:'13:45',t:'IPP plan & scheme timelines',id:'m09c'},
+    {s:'15:30',e:'16:00',t:'Weekly sync: Laura / Raquel',id:'m09d'},
+  ],
+  '2026-04-10': [
+    {s:'09:30',e:'10:00',t:'IPP – Bank relationships',id:'m10a'},
+    {s:'11:30',e:'11:55',t:'E2E Testing Chat',id:'m10b'},
+    {s:'12:05',e:'12:50',t:'Interview: Sankalp Sharma',id:'m10c'},
+    {s:'13:00',e:'13:30',t:'Renata / Laura',id:'m10d'},
+    {s:'13:30',e:'13:55',t:'Brazil Plan sync',id:'m10e'},
+    {s:'14:00',e:'15:00',t:'PM Product Sense + AI Interview',id:'m10f'},
+    {s:'16:00',e:'16:40',t:'Laura / Enrica',id:'m10g'},
+  ],
+  '2026-04-11': [],
+};
 
-function saveActions(actions) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(actions));
-}
+const DATES = ['2026-04-07','2026-04-08','2026-04-09','2026-04-10','2026-04-11'];
+const DNAMES = ['Mon','Tue','Wed','Thu','Fri'];
+const HOURS  = Array.from({length:9},(_,i)=>i+9); // 9–17
+const TODAY  = new Date().toISOString().split('T')[0];
+const PX_HR  = 56;
 
-function loadMeetings() {
-  try { return JSON.parse(localStorage.getItem(MEETINGS_KEY)) || []; }
-  catch { return []; }
-}
+let weekOffset = 0;
+let curMeetId = null, meetLNO = null;
+let curSlotKey = null, slotLNO = null;
 
-// ── Seed demo data if empty ───────────────────────────────────────────────────
-function seedDemoData() {
-  // Start clean — no demo data. Real actions come from the LQ BOT script.
-  // Pre-populate with your real recent meetings from calendar
-  if (loadMeetings().length > 0) return;
-  const meetings = [
-    { title: "Visa Sprint Planning", date: "2026-04-01", actions: 0, transcribed: false },
-    { title: "CP M&M Daily Standup", date: "2026-04-01", actions: 0, transcribed: false },
-    { title: "In-Person Payments: Account structure and config", date: "2026-04-01", actions: 0, transcribed: false },
-    { title: "Weekly CPP OKR Review", date: "2026-04-01", actions: 0, transcribed: false },
-    { title: "MA <> CKO: Tap to More Follow Up", date: "2026-04-01", actions: 0, transcribed: false },
-    { title: "Checkout.com API - IPP Integration Sync", date: "2026-04-02", actions: 0, transcribed: false },
-    { title: "Amanda / Laura 1-1", date: "2026-04-02", actions: 0, transcribed: false },
-    { title: "CP Visa Sprint Retro", date: "2026-04-02", actions: 0, transcribed: false },
-    { title: "Consumer <> PBB <> Card GTM Market Mapping", date: "2026-04-02", actions: 0, transcribed: false },
-    { title: "Laura / Adi - weekly", date: "2026-04-02", actions: 0, transcribed: false },
-    { title: "softPOS Stand-up", date: "2026-04-02", actions: 0, transcribed: false },
-    { title: "Q2 Plan", date: "2026-04-02", actions: 0, transcribed: false },
-  ];
-  localStorage.setItem(MEETINGS_KEY, JSON.stringify(meetings));
-}
+// ── Helpers ──────────────────────────────────────────────────────────────────
+const toM  = t => { const [h,m] = t.split(':').map(Number); return h*60+m; };
+const fmtT = t => {
+  const [h,m] = t.split(':').map(Number);
+  return `${h>12?h-12:h||12}:${String(m).padStart(2,'0')}${h>=12?'pm':'am'}`;
+};
+const mTop = mins => ((mins - 9*60) / 60) * PX_HR;
+const mHgt = (s,e) => Math.max(14, ((toM(e)-toM(s))/60)*PX_HR);
 
 // ── Render ────────────────────────────────────────────────────────────────────
-let currentFilter = 'all';
+function render() {
+  const offset5 = weekOffset * 5;
 
-function setFilter(f, btn) {
-  currentFilter = f;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderActions();
-}
+  // Week label
+  const d0 = new Date(DATES[0]); d0.setDate(d0.getDate()+offset5);
+  const d4 = new Date(DATES[4]); d4.setDate(d4.getDate()+offset5);
+  const wl = d0.toLocaleDateString('en-GB',{day:'numeric',month:'short'}) + ' – ' +
+             d4.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
 
-function renderActions() {
-  const actions = loadActions();
-  const list = document.getElementById('actions-list');
+  // Day headers
+  const hdr = document.getElementById('day-headers');
+  hdr.innerHTML = '<div style="border-right:1px solid var(--border)"></div>' +
+    DATES.map((ds,i) => {
+      const d = new Date(ds); d.setDate(d.getDate()+offset5);
+      const str = d.toISOString().split('T')[0];
+      const isT = str === TODAY;
+      return `<div class="dhc"><div class="dn">${DNAMES[i]}</div><div class="dd${isT?' today':''}">${d.getDate()}</div></div>`;
+    }).join('');
 
-  let filtered = actions.filter(a => {
-    if (currentFilter === 'mine')   return a.assigned_to_me;
-    if (currentFilter === 'others') return !a.assigned_to_me;
-    if (currentFilter === 'open')   return !a.completed;
-    if (currentFilter === 'done')   return a.completed;
-    return true;
+  // Time grid
+  const tg = document.getElementById('time-grid');
+  tg.innerHTML = '';
+
+  // Time labels
+  const tc = document.createElement('div');
+  tc.className = 'time-col';
+  HOURS.forEach(h => {
+    const lbl = document.createElement('div');
+    lbl.className = 'tlbl';
+    lbl.textContent = `${h>12?h-12:h}${h>=12?'p':'a'}`;
+    tc.appendChild(lbl);
+  });
+  const extra = document.createElement('div'); extra.className='tlbl'; extra.textContent='6p'; tc.appendChild(extra);
+  tg.appendChild(tc);
+
+  const cats = getMeetCats();
+  const slots = getSlots();
+
+  DATES.forEach(ds => {
+    const col = document.createElement('div');
+    col.className = 'day-col';
+    col.style.height = (HOURS.length * PX_HR) + 'px';
+
+    // Hour cell backgrounds
+    HOURS.forEach((_,i) => {
+      const cell = document.createElement('div');
+      cell.className = 'hcell';
+      cell.style.cssText = `position:absolute;left:0;right:0;top:${i*PX_HR}px;height:${PX_HR}px;border-bottom:1px solid var(--border);`;
+      col.appendChild(cell);
+    });
+
+    const mts = MEETINGS[ds] || [];
+
+    // Build coverage (per 5-min block from 9:00 to 18:00)
+    // 9*60 = 540, total = 9hrs = 108 five-min blocks
+    const BLOCKS = 108;
+    const BASE = 9*60;
+    const covered = new Array(BLOCKS).fill(false);
+    mts.forEach(m => {
+      const sb = Math.floor((toM(m.s)-BASE)/5);
+      const eb = Math.ceil((toM(m.e)-BASE)/5);
+      for (let x=Math.max(0,sb); x<Math.min(BLOCKS,eb); x++) covered[x]=true;
+    });
+
+    // Find free runs ≥ 1 block (5 mins)
+    let freeRuns = [];
+    let runStart = null;
+    for (let x=0; x<=BLOCKS; x++) {
+      if (!covered[x] && runStart===null) runStart=x;
+      if ((covered[x]||x===BLOCKS) && runStart!==null) {
+        freeRuns.push({sb: runStart, eb: x}); // in 5-min blocks from BASE
+        runStart=null;
+      }
+    }
+
+    // Render meetings with overlap handling
+    // Group by overlap
+    let lanes = []; // each lane is last-end in mins
+    mts.forEach(m => {
+      const ms = toM(m.s), me = toM(m.e);
+      let lane = lanes.findIndex(le => le <= ms);
+      if (lane === -1) { lane = lanes.length; lanes.push(me); } else { lanes[lane] = me; }
+      const cat = cats[m.id];
+      const top = mTop(ms);
+      const h = mHgt(m.s, m.e);
+      const laneW = 1 / Math.max(lanes.length, 1);
+      const left = 3 + lane * (laneW * 100 * ((100 - 6) / 100));
+
+      const ev = document.createElement('div');
+      ev.className = `ev meeting${cat ? ' cat-'+cat : ' uncategorised'}`;
+      ev.style.cssText = `top:${top}px;height:${h}px;left:${lane>0?(3+lane*48)+'px':'3px'};right:3px;`;
+      const badge = cat ? `<span class="cat-badge">${cat}</span>` : '⚠ ';
+      ev.innerHTML = `<div class="ev-time">${fmtT(m.s)}</div><div class="ev-title">${badge}${m.t}</div>`;
+      ev.onclick = () => openMeetModal(m.id, m.t, cat);
+      col.appendChild(ev);
+    });
+
+    // Render free runs
+    freeRuns.forEach(run => {
+      const startMins = BASE + run.sb*5;
+      const endMins   = BASE + run.eb*5;
+      const key = `${ds}|${startMins}`;
+      const filled = slots[key];
+      const top = mTop(startMins);
+      const h = Math.max(14, ((endMins-startMins)/60)*PX_HR);
+
+      const ev = document.createElement('div');
+      if (filled) {
+        ev.className = `ev gap filled-${filled.lno}`;
+        const st = String(Math.floor(startMins/60)).padStart(2,'0')+':'+String(startMins%60).padStart(2,'0');
+        const et = String(Math.floor((startMins+filled.dur*1)/60)).padStart(2,'0')+':'+String((startMins+filled.dur*1)%60).padStart(2,'0');
+        ev.innerHTML = `<span class="cat-badge">${filled.lno}</span>${filled.desc}`;
+        ev.style.cssText = `top:${top+1}px;height:${Math.max(14,Math.min(h-2,(filled.dur/60)*PX_HR))}px;left:3px;right:3px;flex-direction:column;align-items:flex-start;gap:0;`;
+      } else {
+        ev.className = 'ev gap';
+        ev.innerHTML = `<div class="pulse"></div>INPUT REQUIRED`;
+        ev.style.cssText = `top:${top+1}px;height:${h-2}px;left:3px;right:3px;`;
+      }
+      ev.onclick = () => openSlotModal(key, startMins, endMins, filled);
+      col.appendChild(ev);
+    });
+
+    tg.appendChild(col);
   });
 
-  if (filtered.length === 0) {
-    list.innerHTML = '<div class="empty">✅ No actions here!</div>';
-    return;
+  renderLNO();
+  renderStats();
+}
+
+function prevWeek() { weekOffset--; render(); }
+function nextWeek() { weekOffset++; render(); }
+
+// ── LNO strip ────────────────────────────────────────────────────────────────
+function getLNOData() {
+  const cats = getMeetCats();
+  const slots = getSlots();
+  const c = {L:0, N:0, O:0};
+
+  // From meetings (each meeting = its duration in hrs)
+  DATES.forEach(ds => {
+    (MEETINGS[ds]||[]).forEach(m => {
+      const cat = cats[m.id];
+      if (cat) c[cat] += (toM(m.e)-toM(m.s))/60;
+    });
+  });
+
+  // From logged slots (duration in mins)
+  Object.values(slots).forEach(v => {
+    if (v && c[v.lno]!==undefined) c[v.lno] += (v.dur||30)/60;
+  });
+
+  return c;
+}
+
+function renderLNO() {
+  const c = getLNOData();
+  const total = c.L+c.N+c.O || 1;
+  const strip = document.getElementById('lno-strip');
+
+  const labels = {L:'Leverage', N:'Neutral', O:'Overhead'};
+  const colors = {L:'var(--green)', N:'var(--accent)', O:'var(--red)'};
+
+  strip.innerHTML = ['L','N','O'].map(t => `
+    <div class="lno-card">
+      <div class="lno-header">
+        <span class="lno-name" style="color:${colors[t]}">${labels[t]}</span>
+        <span class="lno-pct" style="color:${colors[t]}">${Math.round(c[t]/total*100)}%</span>
+      </div>
+      <div class="bar-track"><div class="bar-fill ${t}" style="width:${c[t]/total*100}%"></div></div>
+      <div class="lno-count">${c[t].toFixed(1)}h logged</div>
+    </div>
+  `).join('');
+}
+
+function renderStats() {
+  const cats = getMeetCats();
+  const slots = getSlots();
+  const totalMeet = DATES.flatMap(d => MEETINGS[d]||[]).length;
+  const catMeet   = Object.keys(cats).length;
+  const totalSlots = Object.keys(slots).length;
+
+  // Count uncategorised meetings
+  const uncat = totalMeet - catMeet;
+
+  document.getElementById('stats-strip').innerHTML = `
+    <div class="stat-box"><div class="stat-label">Meetings</div><div class="stat-val">${totalMeet}</div><div class="stat-sub">this week (accepted)</div></div>
+    <div class="stat-box"><div class="stat-label">Categorised</div><div class="stat-val" style="color:${catMeet===totalMeet?'var(--green)':'var(--amber)'}">${catMeet}/${totalMeet}</div><div class="stat-sub">${uncat>0?uncat+' need LNO':'all done ✓'}</div></div>
+    <div class="stat-box"><div class="stat-label">Gaps logged</div><div class="stat-val" style="color:var(--accent)">${totalSlots}</div><div class="stat-sub">free time entries</div></div>
+    <div class="stat-box"><div class="stat-label">Week</div><div class="stat-val" style="color:var(--text2);font-size:13px;letter-spacing:-.3px">Apr 7–11</div><div class="stat-sub">2026</div></div>
+  `;
+}
+
+// ── Meeting LNO modal ─────────────────────────────────────────────────────────
+function openMeetModal(id, title, existing) {
+  curMeetId = id;
+  meetLNO = existing || null;
+  document.getElementById('meet-modal-title').textContent = `Categorise: ${title}`;
+  ['L','N','O'].forEach(x => {
+    document.getElementById(`mopt-${x}`).className = `lno-opt${existing===x?' sel-'+x:''}`;
+  });
+  openModal('meeting');
+}
+
+function selMeetLNO(v) {
+  meetLNO = v;
+  ['L','N','O'].forEach(x => {
+    document.getElementById(`mopt-${x}`).className = `lno-opt${x===v?' sel-'+v:''}`;
+  });
+}
+
+function saveMeetLNO() {
+  if (!meetLNO) return alert('Please select L, N, or O.');
+  const cats = getMeetCats();
+  cats[curMeetId] = meetLNO;
+  setMeetCats(cats);
+  closeModal('meeting');
+  render();
+}
+
+// ── Slot modal ────────────────────────────────────────────────────────────────
+function openSlotModal(key, startM, endM, existing) {
+  curSlotKey = key;
+  slotLNO = existing?.lno || null;
+  const st = String(Math.floor(startM/60)).padStart(2,'0')+':'+String(startM%60).padStart(2,'0');
+  const et = String(Math.floor(endM/60)).padStart(2,'0')+':'+String(endM%60).padStart(2,'0');
+  document.getElementById('slot-modal-title').textContent = `Log time · ${fmtT(st)} – ${fmtT(et)}`;
+  document.getElementById('slot-desc').value = existing?.desc || '';
+
+  // Duration options: 5-min increments, capped at min(gap size, 60 mins)
+  const maxDur = Math.min(60, endM - startM);
+  const dur = document.getElementById('slot-dur');
+  dur.innerHTML = '';
+  for (let d = 5; d <= Math.max(5, maxDur); d += 5) {
+    const opt = document.createElement('option');
+    opt.value = d;
+    opt.textContent = d < 60 ? `${d} mins` : '1 hr';
+    if (d === (existing?.dur || Math.min(30, maxDur))) opt.selected = true;
+    dur.appendChild(opt);
   }
 
-  list.innerHTML = filtered.map(a => `
-    <div class="action-card ${a.completed ? 'completed' : ''}" id="card-${a.id}">
-      <div class="action-checkbox" onclick="toggleAction(${a.id})">
-        ${a.completed ? '✓' : ''}
-      </div>
-      <div class="action-body">
-        <div class="action-text">${a.action}</div>
-        <div class="action-meta">
-          ${a.assigned_to_me ? '<span class="mine-badge">🙋 Mine</span>' : ''}
-          <span class="meta-tag meta-meeting">📅 ${a.meeting}</span>
-          <span class="meta-tag meta-assignee">👤 ${a.assigned_to}</span>
-          ${a.deadline ? `<span class="meta-tag meta-deadline">⏰ ${a.deadline}</span>` : ''}
-          <span class="meta-tag meta-date">🗓 ${a.date}</span>
+  ['L','N','O'].forEach(x => {
+    document.getElementById(`sopt-${x}`).className = `lno-opt${existing?.lno===x?' sel-'+x:''}`;
+  });
+  openModal('slot');
+}
+
+function selSlotLNO(v) {
+  slotLNO = v;
+  ['L','N','O'].forEach(x => {
+    document.getElementById(`sopt-${x}`).className = `lno-opt${x===v?' sel-'+v:''}`;
+  });
+}
+
+function saveSlot() {
+  const desc = document.getElementById('slot-desc').value.trim();
+  if (!desc || !slotLNO) return alert('Please describe what you did and pick LNO.');
+  const slots = getSlots();
+  slots[curSlotKey] = { desc, lno: slotLNO, dur: parseInt(document.getElementById('slot-dur').value) };
+  setSlots(slots);
+  closeModal('slot');
+  render();
+}
+
+// ── Actions ───────────────────────────────────────────────────────────────────
+function renderActions() {
+  const actions = getActions();
+  const el = document.getElementById('actions-list');
+  if (!actions.length) { el.innerHTML='<div style="padding:24px;color:var(--text3);text-align:center">No actions yet</div>'; return; }
+  el.innerHTML = actions.map((a,i) => `
+    <div class="arow ${a.done?'done':''}" onclick="toggleAction(${i})">
+      <div class="ack">${a.done?'✓':''}</div>
+      <div style="flex:1">
+        <div class="at">${a.text}</div>
+        <div class="atags">
+          ${a.mine?'<span class="tag mine">Mine</span>':''}
+          ${a.meeting?`<span class="tag mt">📅 ${a.meeting}</span>`:''}
+          ${a.deadline?`<span class="tag dl">⏰ ${a.deadline}</span>`:''}
+          ${a.who?`<span class="tag mt">👤 ${a.who}</span>`:''}
         </div>
       </div>
     </div>
   `).join('');
-
-  updateStats(actions);
 }
 
-function renderMeetings() {
-  const meetings = loadMeetings();
-  const grid = document.getElementById('meetings-grid');
-
-  if (meetings.length === 0) {
-    grid.innerHTML = '<div class="empty">No meetings scanned yet.</div>';
-    return;
-  }
-
-  grid.innerHTML = meetings.map(m => `
-    <div class="meeting-card">
-      <div class="meeting-title">📅 ${m.title}</div>
-      <div class="meeting-stats">
-        <div class="meeting-stat">Date: <span>${m.date}</span></div>
-        <div class="meeting-stat">Actions: <span>${m.actions}</span></div>
-        <div class="meeting-stat">Transcript: <span>${m.transcribed ? '✅' : '⚠️ None'}</span></div>
-      </div>
-    </div>
-  `).join('');
-}
-
-function updateStats(actions) {
-  const mine    = actions.filter(a => a.assigned_to_me && !a.completed).length;
-  const others  = actions.filter(a => !a.assigned_to_me && !a.completed).length;
-  const done    = actions.filter(a => a.completed).length;
-  const meetings = loadMeetings().length;
-
-  document.getElementById('stat-mine').textContent     = mine;
-  document.getElementById('stat-others').textContent   = others;
-  document.getElementById('stat-done').textContent     = done;
-  document.getElementById('stat-meetings').textContent = meetings;
-}
-
-// ── Toggle complete ───────────────────────────────────────────────────────────
-function toggleAction(id) {
-  const actions = loadActions();
-  const a = actions.find(x => x.id === id);
-  if (a) { a.completed = !a.completed; saveActions(actions); renderActions(); }
-}
-
-// ── Modal ─────────────────────────────────────────────────────────────────────
-function openModal()  { document.getElementById('modal').classList.add('open'); }
-function closeModal() { document.getElementById('modal').classList.remove('open'); }
+function toggleAction(i) { const a=getActions(); a[i].done=!a[i].done; setActions(a); renderActions(); }
 
 function saveAction() {
-  const action = document.getElementById('f-action').value.trim();
-  if (!action) return alert('Please enter an action.');
-
-  const actions = loadActions();
-  const newAction = {
-    id: Date.now(),
-    action,
-    assigned_to: document.getElementById('f-assignee').value || 'Unknown',
-    assigned_to_me: document.getElementById('f-mine').value === 'true',
-    meeting: document.getElementById('f-meeting').value || 'Manual entry',
-    deadline: document.getElementById('f-deadline').value || null,
-    completed: false,
-    date: new Date().toISOString().split('T')[0]
-  };
-
-  actions.unshift(newAction);
-  saveActions(actions);
-  closeModal();
+  const text = document.getElementById('act-text').value.trim();
+  if (!text) return;
+  const a = getActions();
+  a.push({ text, who:document.getElementById('act-who').value, meeting:document.getElementById('act-meeting').value, deadline:document.getElementById('act-deadline').value, mine:document.getElementById('act-mine').value==='true', done:false });
+  setActions(a);
+  closeModal('action');
+  document.getElementById('act-text').value='';
   renderActions();
-  renderMeetings();
+}
 
-  // Clear form
-  ['f-action','f-assignee','f-meeting','f-deadline'].forEach(id => document.getElementById(id).value = '');
+// ── Analytics ─────────────────────────────────────────────────────────────────
+function renderAnalytics() {
+  const c = getLNOData();
+  const total = c.L+c.N+c.O;
+  const cats = getMeetCats();
+  const totalMeet = DATES.flatMap(d=>MEETINGS[d]||[]).length;
+  const catMeet = Object.keys(cats).length;
+
+  document.getElementById('analytics-content').innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
+      ${[['L','Leverage','var(--green)','var(--green-soft)'],['N','Neutral','var(--accent)','var(--accent-soft)'],['O','Overhead','var(--red)','var(--red-soft)']].map(([t,n,col,bg])=>`
+        <div style="background:${bg};border-radius:10px;padding:16px;text-align:center">
+          <div style="font-size:30px;font-weight:800;color:${col};letter-spacing:-1px">${c[t].toFixed(1)}h</div>
+          <div style="font-size:11px;color:${col};font-weight:600;margin-top:4px">${n}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px">${total?Math.round(c[t]/total*100):0}% of time</div>
+        </div>
+      `).join('')}
+    </div>
+    <div style="font-size:12px;color:var(--text3);text-align:center;padding-top:8px;border-top:1px solid var(--border)">
+      ${catMeet}/${totalMeet} meetings categorised · ${total.toFixed(1)}h total logged
+    </div>
+  `;
+}
+
+// ── Modal helpers ─────────────────────────────────────────────────────────────
+function openModal(t) { document.getElementById(`modal-${t}`).classList.add('open'); }
+function closeModal(t) { document.getElementById(`modal-${t}`).classList.remove('open'); }
+['meeting','slot','action'].forEach(t => {
+  document.getElementById(`modal-${t}`).addEventListener('click', e => { if (e.target===e.currentTarget) closeModal(t); });
+});
+
+// ── Page nav ──────────────────────────────────────────────────────────────────
+function showPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById(`page-${name}`).classList.add('active');
+  btn.classList.add('active');
+  if (name==='actions') renderActions();
+  if (name==='analytics') renderAnalytics();
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
-seedDemoData();
-renderActions();
-renderMeetings();
+render();
 </script>
 </body>
 </html>

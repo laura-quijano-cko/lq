@@ -525,68 +525,23 @@ function loadMeetings() {
 
 // ── Seed demo data if empty ───────────────────────────────────────────────────
 function seedDemoData() {
-  if (loadActions().length > 0) return;
-
-  const demo = [
-    {
-      id: 1,
-      action: "Send updated pricing deck to Visa Direct team",
-      assigned_to: "Laura Quijano",
-      assigned_to_me: true,
-      meeting: "CKO | Visa Direct Bi-Weekly Meeting",
-      deadline: "2026-04-18",
-      completed: false,
-      date: "2026-04-07"
-    },
-    {
-      id: 2,
-      action: "Share Worldline file transfer migration timeline",
-      assigned_to: "Laura Quijano",
-      assigned_to_me: true,
-      meeting: "Worldline File Transfer Migration",
-      deadline: "2026-04-20",
-      completed: false,
-      date: "2026-04-14"
-    },
-    {
-      id: 3,
-      action: "Provide API documentation for integration",
-      assigned_to: "Jack Stannard",
-      assigned_to_me: false,
-      meeting: "CKO | Visa Direct Bi-Weekly Meeting",
-      deadline: null,
-      completed: false,
-      date: "2026-04-07"
-    },
-    {
-      id: 4,
-      action: "Confirm file transfer test environment access",
-      assigned_to: "Gregory Dorizon",
-      assigned_to_me: false,
-      meeting: "Worldline File Transfer Migration",
-      deadline: "2026-04-17",
-      completed: false,
-      date: "2026-04-14"
-    },
-    {
-      id: 5,
-      action: "Review Ashby ATS interviewer training materials",
-      assigned_to: "Laura Quijano",
-      assigned_to_me: true,
-      meeting: "Ashby ATS | Interviewer Enablement Session",
-      deadline: null,
-      completed: true,
-      date: "2026-04-10"
-    }
-  ];
-
+  // Start clean — no demo data. Real actions come from the LQ BOT script.
+  // Pre-populate with your real recent meetings from calendar
+  if (loadMeetings().length > 0) return;
   const meetings = [
-    { title: "CKO | Visa Direct Bi-Weekly Meeting", date: "2026-04-07", actions: 2, transcribed: true },
-    { title: "Worldline File Transfer Migration", date: "2026-04-14", actions: 2, transcribed: true },
-    { title: "Ashby ATS | Interviewer Enablement Session", date: "2026-04-10", actions: 1, transcribed: false },
+    { title: "Visa Sprint Planning", date: "2026-04-01", actions: 0, transcribed: false },
+    { title: "CP M&M Daily Standup", date: "2026-04-01", actions: 0, transcribed: false },
+    { title: "In-Person Payments: Account structure and config", date: "2026-04-01", actions: 0, transcribed: false },
+    { title: "Weekly CPP OKR Review", date: "2026-04-01", actions: 0, transcribed: false },
+    { title: "MA <> CKO: Tap to More Follow Up", date: "2026-04-01", actions: 0, transcribed: false },
+    { title: "Checkout.com API - IPP Integration Sync", date: "2026-04-02", actions: 0, transcribed: false },
+    { title: "Amanda / Laura 1-1", date: "2026-04-02", actions: 0, transcribed: false },
+    { title: "CP Visa Sprint Retro", date: "2026-04-02", actions: 0, transcribed: false },
+    { title: "Consumer <> PBB <> Card GTM Market Mapping", date: "2026-04-02", actions: 0, transcribed: false },
+    { title: "Laura / Adi - weekly", date: "2026-04-02", actions: 0, transcribed: false },
+    { title: "softPOS Stand-up", date: "2026-04-02", actions: 0, transcribed: false },
+    { title: "Q2 Plan", date: "2026-04-02", actions: 0, transcribed: false },
   ];
-
-  saveActions(demo);
   localStorage.setItem(MEETINGS_KEY, JSON.stringify(meetings));
 }
 
